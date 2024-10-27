@@ -1,0 +1,6 @@
+streamlit
+openai
+PyGithub
+faiss-cpu
+sentence-transformers
+tree-sitter-python
