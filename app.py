@@ -67,7 +67,7 @@ def generate_test_case_with_gpt(query, code_snippets):
         f"Generate a test case for {query}.\n"
         "Please respond with the test case code only, without any additional explanations."
     )
-    print(prompt)
+    st.write(prompt)
     stream = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[{"role": "user", "content": prompt}],
