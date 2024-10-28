@@ -79,6 +79,22 @@ def generate_test_case_with_gpt(query, code_snippets):
             output += chunk.choices[0].delta.content
     return output
 
+# Function to recursively find all Python files in a GitHub repository
+def get_python_files(repo):
+    python_files = []
+    contents = repo.get_contents("")
+    
+    while contents:
+        content = contents.pop(0)
+        if content.type == "dir":
+            # If it's a directory, get its contents
+            contents.extend(repo.get_contents(content.path))
+        elif content.path.endswith(".py"):
+            # If it's a Python file, add to the list
+            python_files.append(content.path)
+
+    return python_files
+
 # Streamlit App UI
 st.title("GitHub Code QA")
 github_repo = st.text_input("Enter GitHub repository URL:")
@@ -89,13 +105,17 @@ if st.button("Analyze and Generate Test Case"):
         g = Github(os.getenv("GITHUB_TOKEN"))
         repo_name = github_repo.split("github.com/")[-1]
         repo = g.get_repo(repo_name)
+        
+        python_files = get_python_files(repo)  # Get all Python files in the repo
         code_lines = []
-        for content_file in repo.get_contents(""):
-            if content_file.path.endswith(".py"):  # Only parse Python files
-                file_content = content_file.decoded_content.decode('utf-8')
-                code_lines.extend(file_content.splitlines())
+        
+        for file_path in python_files:
+            file_content = repo.get_contents(file_path).decoded_content.decode('utf-8')
+            code_lines.extend(file_content.splitlines())
+        
         with open("temp_code.py", "w") as temp_code_file:
             temp_code_file.write("\n".join(code_lines))
+            
         functions = parse_code("temp_code.py")
         snippets, embeddings = embed_code_snippets(functions, code_lines)
         index = store_embeddings_in_faiss(embeddings)
