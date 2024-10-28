@@ -3,4 +3,5 @@ openai
 PyGithub
 faiss-cpu
 sentence-transformers
-tree-sitter-python
+tree-sitter
+tree-sitter-pytho
